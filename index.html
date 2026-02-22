@@ -322,6 +322,13 @@
   .gallery-item:hover .gallery-item-label { opacity: 1; }
   .gallery-item-icon { display: block; font-size: 1.8rem; margin-bottom: 0.4rem; }
 
+  /* Instagram */
+  .instagram { background: var(--white); }
+  .instagram-header { text-align: center; max-width: 600px; margin: 0 auto 3rem; }
+  .instagram-grid { max-width: 540px; margin: 0 auto; display: flex; justify-content: center; }
+  .instagram-grid blockquote { margin: 0 !important; }
+  .instagram-follow { text-align: center; margin-top: 2.5rem; }
+
   /* Process */
   .process { background: var(--white); }
   .process-header { text-align: center; max-width: 600px; margin: 0 auto 4.5rem; }
@@ -541,6 +548,19 @@
   </div>
 </section>
 
+<section class="instagram" id="instagram">
+  <div class="instagram-header reveal">
+    <span class="section-label">Follow Along</span>
+    <h2 class="section-title">Latest from <span class="color-word">Instagram</span></h2>
+  </div>
+  <div class="instagram-grid reveal">
+    <blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/phantasm.mv/p/DU-hYgxkiyh/" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%;"></blockquote>
+  </div>
+  <div class="instagram-follow reveal">
+    <a href="https://www.instagram.com/phantasm.mv/" target="_blank" class="btn-primary">Follow @phantasm.mv</a>
+  </div>
+</section>
+
 <section class="process" id="process">
   <div class="process-header reveal">
     <span class="section-label">How We Work</span>
@@ -619,6 +639,7 @@
     });
   });
 </script>
+<script async src="https://www.instagram.com/embed.js"></script>
 
 </body>
 </html>
