@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phantasm MV — Event Management & Party Decorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Outfit:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple: #7C3AED;
+    --blue: #2563EB;
+    --green: #16A34A;
+    --yellow: #EAB308;
+    --orange: #EA580C;
+    --red: #DC2626;
+    --pink: #DB2777;
+    --magenta: #C026D3;
+
+    --white: #FFFFFF;
+    --snow: #FAFAFA;
+    --light: #F5F5F5;
+    --light-warm: #FBF9F7;
+    --light-alt: #F0EDE8;
+    --border: #E5E2DD;
+    --border-light: #EEEBE6;
+    --text-dark: #1A1A1A;
+    --text-body: #444444;
+    --text-muted: #777777;
+    --text-light: #999999;
+
+    --gradient-rainbow: linear-gradient(135deg, var(--purple), var(--blue), var(--green), var(--yellow), var(--orange), var(--red), var(--pink), var(--magenta));
+    --gradient-rainbow-h: linear-gradient(90deg, var(--purple), var(--blue), var(--green), var(--yellow), var(--orange), var(--red), var(--pink), var(--magenta));
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body { font-family: 'Outfit', sans-serif; background: var(--white); color: var(--text-dark); overflow-x: hidden; }
+
+  /* Navigation */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    padding: 1rem 3rem; display: flex; justify-content: space-between; align-items: center;
+    transition: all 0.4s;
+  }
+
+  nav.scrolled {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 1px 20px rgba(0,0,0,0.06);
+  }
+
+  .logo { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; }
+  .logo img { height: 48px; width: auto; }
+  .logo-text {
+    font-size: 1.1rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase;
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; align-items: center; }
+  .nav-links a {
+    color: var(--text-body); text-decoration: none; font-size: 0.78rem;
+    letter-spacing: 0.18em; text-transform: uppercase; font-weight: 500;
+    position: relative; transition: color 0.3s;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 2px; background: var(--gradient-rainbow-h); transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--text-dark); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-cta {
+    padding: 0.6rem 1.6rem !important; background: linear-gradient(90deg, var(--purple), var(--pink));
+    color: #fff !important; font-weight: 600 !important;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    transition: opacity 0.3s !important;
+  }
+  .nav-cta::after { display: none !important; }
+  .nav-cta:hover { opacity: 0.88; color: #fff !important; }
+
+  .menu-toggle { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; }
+  .menu-toggle span { width: 24px; height: 1.5px; background: var(--text-dark); transition: all 0.3s; }
+
+  /* Hero */
+  .hero {
+    position: relative; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(180deg, var(--light-warm) 0%, var(--white) 100%);
+  }
+
+  .hero-geo { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .geo-tri { position: absolute; width: 0; height: 0; }
+  .geo-tri-1 {
+    border-left: 250px solid transparent; border-right: 250px solid transparent;
+    border-bottom: 500px solid rgba(124,58,237,0.04);
+    top: -10%; right: -5%; animation: geoDrift 20s ease-in-out infinite;
+  }
+  .geo-tri-2 {
+    border-left: 200px solid transparent; border-right: 200px solid transparent;
+    border-bottom: 400px solid rgba(37,99,235,0.03);
+    bottom: -5%; left: -8%; animation: geoDrift 18s ease-in-out 2s infinite reverse;
+  }
+  .geo-tri-3 {
+    border-left: 150px solid transparent; border-right: 150px solid transparent;
+    border-bottom: 300px solid rgba(219,39,119,0.03);
+    top: 20%; left: 15%; animation: geoDrift 22s ease-in-out 4s infinite;
+  }
+  .geo-line { position: absolute; height: 1px; transform-origin: left center; }
+  .geo-line-1 { width: 800px; background: linear-gradient(90deg, rgba(124,58,237,0.08), transparent); top: 30%; left: -5%; transform: rotate(-25deg); }
+  .geo-line-2 { width: 600px; background: linear-gradient(90deg, transparent, rgba(22,163,74,0.08)); bottom: 25%; right: -5%; transform: rotate(15deg); }
+  .geo-line-3 { width: 500px; background: linear-gradient(90deg, rgba(234,179,8,0.08), transparent); top: 60%; left: 10%; transform: rotate(-10deg); }
+  @keyframes geoDrift { 0%, 100% { transform: translate(0,0) rotate(0deg); } 33% { transform: translate(20px,-15px) rotate(2deg); } 66% { transform: translate(-10px,10px) rotate(-1deg); } }
+
+  .hero-particles { position: absolute; inset: 0; overflow: hidden; }
+  .particle { position: absolute; border-radius: 50%; opacity: 0; animation: float-up 12s infinite; }
+  @keyframes float-up { 0% { opacity: 0; transform: translateY(100vh) scale(0); } 10% { opacity: 0.5; } 90% { opacity: 0; } 100% { opacity: 0; transform: translateY(-10vh) scale(1); } }
+
+  .hero-content { text-align: center; z-index: 2; padding: 0 2rem; }
+  .hero-logo-big {
+    width: 130px; height: auto; margin: 0 auto 2rem; display: block;
+    opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+    filter: drop-shadow(0 4px 20px rgba(124,58,237,0.1));
+  }
+  .hero-tagline {
+    font-size: 0.72rem; letter-spacing: 0.5em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif; font-size: clamp(3rem,8vw,7rem);
+    font-weight: 300; line-height: 1.05; color: var(--text-dark); margin-bottom: 0.5rem;
+    opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+  }
+  .color-word {
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; font-weight: 400; font-style: italic;
+  }
+  .hero-subtitle {
+    font-size: clamp(0.9rem,1.5vw,1.1rem); font-weight: 300;
+    color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 3rem;
+    opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+  }
+  .hero-cta-group {
+    display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.8s 1s forwards;
+  }
+
+  .btn-primary {
+    padding: 1rem 3rem; background: linear-gradient(90deg, var(--purple), var(--pink));
+    color: #fff; border: none; font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 600; cursor: pointer; text-decoration: none;
+    transition: all 0.3s; display: inline-block;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(124,58,237,0.2); }
+
+  .btn-outline {
+    padding: 1rem 3rem; background: transparent; color: var(--text-dark);
+    border: 1.5px solid var(--border); font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+    font-weight: 400; cursor: pointer; text-decoration: none; transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .btn-outline:hover { border-color: var(--text-body); background: var(--snow); }
+
+  .hero-scroll {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    opacity: 0; animation: fadeUp 0.8s 1.2s forwards;
+  }
+  .hero-scroll span { font-size: 0.6rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-light); }
+  .scroll-line { width: 2px; height: 35px; background: var(--gradient-rainbow); animation: scrollPulse 2s infinite; border-radius: 2px; }
+  @keyframes scrollPulse { 0%, 100% { opacity: 0.3; transform: scaleY(0.5); } 50% { opacity: 1; transform: scaleY(1); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* Sections */
+  section { padding: 7rem 3rem; position: relative; }
+  .section-label {
+    font-size: 0.68rem; letter-spacing: 0.5em; text-transform: uppercase;
+    margin-bottom: 1rem; font-weight: 600;
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem,4vw,3.2rem);
+    font-weight: 300; line-height: 1.2; margin-bottom: 1.5rem; color: var(--text-dark);
+  }
+
+  /* About */
+  .about { background: var(--white); }
+  .about-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+  .about-visual { position: relative; height: 480px; display: flex; align-items: center; justify-content: center; }
+  .about-geo-1 { position: absolute; width: 280px; height: 380px; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); background: linear-gradient(180deg, rgba(124,58,237,0.08), rgba(124,58,237,0.02)); animation: shapeFloat 7s ease-in-out infinite; }
+  .about-geo-2 { position: absolute; width: 240px; height: 340px; clip-path: polygon(50% 100%, 0% 0%, 100% 0%); background: linear-gradient(0deg, rgba(37,99,235,0.06), rgba(37,99,235,0.01)); transform: translate(40px,-20px); animation: shapeFloat 7s ease-in-out 1.5s infinite; }
+  .about-geo-3 { position: absolute; width: 180px; height: 250px; clip-path: polygon(50% 0%, 100% 100%, 0% 100%); background: linear-gradient(180deg, rgba(219,39,119,0.07), rgba(219,39,119,0.01)); transform: translate(-60px,30px); animation: shapeFloat 7s ease-in-out 3s infinite; }
+  @keyframes shapeFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+  .about-badge {
+    position: relative; z-index: 2; width: 160px; height: 160px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--white); box-shadow: 0 4px 30px rgba(0,0,0,0.06);
+  }
+  .about-badge::before {
+    content: ''; position: absolute; inset: -2px; border-radius: 50%;
+    background: var(--gradient-rainbow); z-index: -1;
+  }
+  .about-badge::after {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: var(--white); z-index: -1;
+  }
+  .about-badge .year {
+    font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; line-height: 1;
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .about-badge .since { font-size: 0.6rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.3rem; }
+
+  .about-text p { font-size: 0.95rem; line-height: 2; color: var(--text-body); font-weight: 300; margin-bottom: 1.5rem; }
+  .founders { display: flex; gap: 2rem; margin-top: 2.5rem; }
+  .founder { display: flex; align-items: center; gap: 1rem; }
+  .founder-avatar {
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: #fff; position: relative;
+  }
+  .founder:nth-child(1) .founder-avatar { background: linear-gradient(135deg, var(--purple), var(--blue)); }
+  .founder:nth-child(2) .founder-avatar { background: linear-gradient(135deg, var(--pink), var(--magenta)); }
+  .founder-info .name { font-size: 0.9rem; font-weight: 600; color: var(--text-dark); }
+  .founder-info .role { font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); font-weight: 400; }
+  .ornament { display: flex; align-items: center; gap: 0.8rem; margin: 2rem 0; }
+  .ornament-line { width: 60px; height: 2px; background: var(--gradient-rainbow-h); opacity: 0.5; }
+  .ornament-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--purple); }
+
+  /* Services */
+  .services { background: var(--light-warm); overflow: hidden; }
+  .services-header { text-align: center; max-width: 600px; margin: 0 auto 4rem; }
+  .services-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+
+  .service-card {
+    padding: 2.5rem 2rem; background: var(--white);
+    border: 1px solid var(--border-light);
+    transition: all 0.4s; position: relative; overflow: hidden;
+    border-radius: 2px;
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .service-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 3px; background: var(--gradient-rainbow-h);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.5s;
+  }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card:hover {
+    border-color: transparent; transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+  }
+
+  .service-icon {
+    width: 52px; height: 52px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 1.5rem;
+  }
+  .service-card:nth-child(1) .service-icon { background: rgba(124,58,237,0.08); }
+  .service-card:nth-child(2) .service-icon { background: rgba(219,39,119,0.08); }
+  .service-card:nth-child(3) .service-icon { background: rgba(37,99,235,0.08); }
+  .service-card:nth-child(4) .service-icon { background: rgba(22,163,74,0.08); }
+  .service-card:nth-child(5) .service-icon { background: rgba(234,88,12,0.08); }
+  .service-card:nth-child(6) .service-icon { background: rgba(234,179,8,0.08); }
+
+  .service-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 500; margin-bottom: 0.8rem; color: var(--text-dark); }
+  .service-card p { font-size: 0.85rem; line-height: 1.8; color: var(--text-muted); font-weight: 300; }
+
+  /* Stats */
+  .stats-ribbon { padding: 4rem 3rem; position: relative; overflow: hidden; background: var(--white); }
+  .stats-ribbon::before, .stats-ribbon::after {
+    content: ''; position: absolute; left: 0; right: 0; height: 2px;
+    background: var(--gradient-rainbow-h); opacity: 0.35;
+  }
+  .stats-ribbon::before { top: 0; }
+  .stats-ribbon::after { bottom: 0; }
+  .stats-grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; text-align: center; }
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; line-height: 1;
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .stat-label { font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--text-muted); margin-top: 0.5rem; font-weight: 400; }
+
+  /* Gallery */
+  .gallery { background: var(--light-warm); }
+  .gallery-header { text-align: center; max-width: 600px; margin: 0 auto 4rem; }
+  .gallery-mosaic { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 240px 240px; gap: 0.8rem; }
+
+  .gallery-item {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.5s;
+    background: var(--white); border: 1px solid var(--border-light);
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  }
+  .gallery-item::before { content: ''; position: absolute; inset: 0; opacity: 0.06; transition: opacity 0.4s; }
+  .gallery-item:nth-child(1)::before { background: linear-gradient(135deg, var(--purple), var(--blue)); }
+  .gallery-item:nth-child(2)::before { background: linear-gradient(135deg, var(--green), var(--yellow)); }
+  .gallery-item:nth-child(3)::before { background: linear-gradient(135deg, var(--pink), var(--magenta)); }
+  .gallery-item:nth-child(4)::before { background: linear-gradient(135deg, var(--orange), var(--red)); }
+  .gallery-item:nth-child(5)::before { background: linear-gradient(135deg, var(--blue), var(--green)); }
+  .gallery-item:nth-child(6)::before { background: linear-gradient(135deg, var(--magenta), var(--purple)); }
+  .gallery-item:hover::before { opacity: 0.14; }
+  .gallery-item:hover { transform: scale(1.03); z-index: 2; box-shadow: 0 8px 30px rgba(0,0,0,0.08); border-color: transparent; }
+  .gallery-item:nth-child(1) { grid-column: span 2; }
+  .gallery-item:nth-child(4) { grid-column: span 2; }
+
+  .gallery-item-label {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 400;
+    color: var(--text-body); text-align: center; padding: 1rem;
+    opacity: 0.7; transition: opacity 0.3s; position: relative; z-index: 1;
+  }
+  .gallery-item:hover .gallery-item-label { opacity: 1; }
+  .gallery-item-icon { display: block; font-size: 1.8rem; margin-bottom: 0.4rem; }
+
+  /* Process */
+  .process { background: var(--white); }
+  .process-header { text-align: center; max-width: 600px; margin: 0 auto 4.5rem; }
+  .process-timeline { max-width: 900px; margin: 0 auto; position: relative; }
+  .process-timeline::before {
+    content: ''; position: absolute; left: 30px; top: 0; bottom: 0;
+    width: 2px; background: var(--gradient-rainbow); opacity: 0.25; border-radius: 2px;
+  }
+  .process-step { display: flex; gap: 2.5rem; margin-bottom: 3.5rem; align-items: flex-start; }
+  .step-marker {
+    min-width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;
+    font-family: 'Outfit', sans-serif; font-size: 0.85rem; font-weight: 600; color: #fff;
+    position: relative; z-index: 1;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  .process-step:nth-child(1) .step-marker { background: var(--purple); }
+  .process-step:nth-child(2) .step-marker { background: var(--blue); }
+  .process-step:nth-child(3) .step-marker { background: var(--green); }
+  .process-step:nth-child(4) .step-marker { background: var(--pink); }
+
+  .step-content h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.5rem; }
+  .step-content p { font-size: 0.88rem; line-height: 1.8; color: var(--text-muted); font-weight: 300; }
+
+  /* Testimonials */
+  .testimonials { background: var(--light-warm); text-align: center; }
+  .testimonials-header { max-width: 600px; margin: 0 auto 3.5rem; }
+  .testimonial-card {
+    max-width: 680px; margin: 0 auto; padding: 3rem;
+    position: relative; background: var(--white);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+  }
+  .testimonial-quote-mark {
+    font-family: 'Cormorant Garamond', serif; font-size: 5rem; line-height: 1;
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; opacity: 0.25; position: absolute; top: 0.5rem; left: 2rem;
+  }
+  .testimonial-card p {
+    font-family: 'Cormorant Garamond', serif; font-size: 1.25rem;
+    font-weight: 300; font-style: italic; line-height: 1.9;
+    color: var(--text-body); margin-bottom: 1.5rem; position: relative; z-index: 1;
+  }
+  .testimonial-author { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); font-weight: 400; }
+
+  /* Contact */
+  .contact { background: var(--white); text-align: center; }
+  .contact-inner { max-width: 700px; margin: 0 auto; }
+  .contact-subtitle { font-size: 0.95rem; color: var(--text-muted); font-weight: 300; line-height: 1.9; margin-bottom: 3rem; }
+  .contact-methods { display: flex; justify-content: center; gap: 3.5rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .contact-method-label { font-size: 0.62rem; letter-spacing: 0.4em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; display: block; }
+  .contact-method a, .contact-method span { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; color: var(--text-dark); text-decoration: none; transition: all 0.3s; }
+  .contact-method a:hover {
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+
+  .social-links { display: flex; justify-content: center; gap: 1.5rem; margin-top: 3rem; }
+  .social-link {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all 0.3s; position: relative; overflow: hidden;
+  }
+  .social-link::before {
+    content: ''; position: absolute; inset: 0; border-radius: 50%;
+    background: var(--gradient-rainbow); opacity: 0; transition: opacity 0.3s;
+  }
+  .social-link:hover::before { opacity: 0.1; }
+  .social-link:hover { border-color: var(--text-light); transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+  .social-link svg { width: 18px; height: 18px; fill: var(--text-muted); transition: fill 0.3s; position: relative; z-index: 1; }
+  .social-link:hover svg { fill: var(--text-dark); }
+
+  /* Footer */
+  footer { padding: 2.5rem 3rem; text-align: center; background: var(--light-warm); position: relative; }
+  footer::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gradient-rainbow-h); opacity: 0.3; }
+  .footer-logo { display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-bottom: 0.8rem; }
+  .footer-logo img { height: 32px; }
+  .footer-logo-text {
+    font-size: 0.85rem; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase;
+    background: var(--gradient-rainbow-h);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  footer p { font-size: 0.72rem; color: var(--text-muted); font-weight: 300; letter-spacing: 0.08em; }
+
+  /* Scroll Reveal */
+  .reveal { opacity: 0; transform: translateY(35px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-mosaic { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+    .gallery-item:nth-child(1), .gallery-item:nth-child(4) { grid-column: span 1; }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .menu-toggle { display: flex; }
+    .nav-links.open {
+      display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0;
+      background: rgba(255,255,255,0.97); backdrop-filter: blur(20px);
+      padding: 2rem; gap: 1.5rem; box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+    }
+    section { padding: 4.5rem 1.5rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .about-visual { height: 280px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+    .gallery-mosaic { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .founders { flex-direction: column; gap: 1rem; }
+    .contact-methods { flex-direction: column; gap: 1.5rem; }
+    .hero-logo-big { width: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="navbar">
+  <a href="#" class="logo">
+    <img src="logo.png" alt="Phantasm MV Logo">
+    <span class="logo-text">Phantasm</span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#gallery">Portfolio</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+  </ul>
+  <button class="menu-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')"><span></span><span></span><span></span></button>
+</nav>
+
+<section class="hero">
+  <div class="hero-geo">
+    <div class="geo-tri geo-tri-1"></div>
+    <div class="geo-tri geo-tri-2"></div>
+    <div class="geo-tri geo-tri-3"></div>
+    <div class="geo-line geo-line-1"></div>
+    <div class="geo-line geo-line-2"></div>
+    <div class="geo-line geo-line-3"></div>
+  </div>
+  <div class="hero-particles" id="particles"></div>
+  <div class="hero-content">
+    <img src="logo.png" alt="Phantasm MV" class="hero-logo-big">
+    <p class="hero-tagline">Event Management &bull; Party Decorations</p>
+    <h1 class="hero-title">Where Dreams<br>Become <span class="color-word">Reality</span></h1>
+    <p class="hero-subtitle">Crafting unforgettable celebrations across the Maldives since 2017</p>
+    <div class="hero-cta-group">
+      <a href="#contact" class="btn-primary">Plan Your Event</a>
+      <a href="#services" class="btn-outline">Explore Services</a>
+    </div>
+  </div>
+  <div class="hero-scroll"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-grid">
+    <div class="about-visual reveal">
+      <div class="about-geo-1"></div>
+      <div class="about-geo-2"></div>
+      <div class="about-geo-3"></div>
+      <div class="about-badge"><span class="year">2017</span><span class="since">Est.</span></div>
+    </div>
+    <div class="about-text reveal">
+      <span class="section-label">Our Story</span>
+      <h2 class="section-title">Two Visionaries,<br>One <span class="color-word">Phantasm</span></h2>
+      <p>Born from a shared passion for turning ordinary moments into extraordinary memories, Phantasm MV was founded in 2017 by Phasa and Noonu — two creative souls who believed every celebration deserves a touch of magic.</p>
+      <p>From intimate birthday gatherings to grand milestone celebrations, we pour our hearts into every detail — the colors, the textures, the atmosphere — creating immersive experiences that linger long after the last guest departs.</p>
+      <div class="ornament"><div class="ornament-line"></div><div class="ornament-dot"></div><div class="ornament-line"></div></div>
+      <div class="founders">
+        <div class="founder"><div class="founder-avatar">P</div><div class="founder-info"><div class="name">Phasa</div><div class="role">Co-Founder</div></div></div>
+        <div class="founder"><div class="founder-avatar">N</div><div class="founder-info"><div class="name">Noonu</div><div class="role">Co-Founder</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <div class="services-header reveal">
+    <span class="section-label">What We Do</span>
+    <h2 class="section-title">Creating <span class="color-word">Moments</span><br>That Matter</h2>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal"><div class="service-icon">🎂</div><h3>Birthday Parties</h3><p>From whimsical children's themes to elegant adult celebrations — custom backdrops, balloon arches, table settings, and every detail in between.</p></div>
+    <div class="service-card reveal"><div class="service-icon">💐</div><h3>Wedding Decorations</h3><p>Transform your special day into a dreamy affair with bespoke floral arrangements, ceremony setups, reception styling, and curated aesthetics.</p></div>
+    <div class="service-card reveal"><div class="service-icon">🏢</div><h3>Corporate Events</h3><p>Professional event styling for launches, conferences, and company celebrations that make a lasting impression on your guests and clients.</p></div>
+    <div class="service-card reveal"><div class="service-icon">👶</div><h3>Baby Showers</h3><p>Delicate and heartwarming setups to welcome the newest arrivals — from gender reveals to naming ceremonies with a personal touch.</p></div>
+    <div class="service-card reveal"><div class="service-icon">🎭</div><h3>Theme Parties</h3><p>Immersive themed environments brought to life — from tropical luaus to vintage soirées, we create worlds for your guests to step into.</p></div>
+    <div class="service-card reveal"><div class="service-icon">✨</div><h3>Full Event Planning</h3><p>End-to-end event management from concept to execution — venue coordination, vendor management, timeline planning, and on-site direction.</p></div>
+  </div>
+</section>
+
+<div class="stats-ribbon">
+  <div class="stats-grid reveal">
+    <div class="stat-item"><div class="stat-number">8+</div><div class="stat-label">Years of Magic</div></div>
+    <div class="stat-item"><div class="stat-number">500+</div><div class="stat-label">Events Styled</div></div>
+    <div class="stat-item"><div class="stat-number">100%</div><div class="stat-label">Heart & Soul</div></div>
+    <div class="stat-item"><div class="stat-number">∞</div><div class="stat-label">Memories Made</div></div>
+  </div>
+</div>
+
+<section class="gallery" id="gallery">
+  <div class="gallery-header reveal">
+    <span class="section-label">Portfolio</span>
+    <h2 class="section-title">A Glimpse of<br>Our <span class="color-word">Creations</span></h2>
+  </div>
+  <div class="gallery-mosaic reveal">
+    <div class="gallery-item"><div class="gallery-item-label"><span class="gallery-item-icon">🎂</span>Birthday Celebrations</div></div>
+    <div class="gallery-item"><div class="gallery-item-label"><span class="gallery-item-icon">💐</span>Floral Designs</div></div>
+    <div class="gallery-item"><div class="gallery-item-label"><span class="gallery-item-icon">🎈</span>Balloon Artistry</div></div>
+    <div class="gallery-item"><div class="gallery-item-label"><span class="gallery-item-icon">✨</span>Themed Events</div></div>
+    <div class="gallery-item"><div class="gallery-item-label"><span class="gallery-item-icon">💍</span>Wedding Magic</div></div>
+    <div class="gallery-item"><div class="gallery-item-label"><span class="gallery-item-icon">🎉</span>Corporate Events</div></div>
+  </div>
+</section>
+
+<section class="process" id="process">
+  <div class="process-header reveal">
+    <span class="section-label">How We Work</span>
+    <h2 class="section-title">From Vision<br>to <span class="color-word">Celebration</span></h2>
+  </div>
+  <div class="process-timeline reveal">
+    <div class="process-step"><div class="step-marker">01</div><div class="step-content"><h3>Dream & Discover</h3><p>We begin with a conversation — your vision, your dreams, the feeling you want to create. We listen, understand, and imagine the possibilities together.</p></div></div>
+    <div class="process-step"><div class="step-marker">02</div><div class="step-content"><h3>Design & Plan</h3><p>Our team crafts a detailed concept — mood boards, color palettes, layouts, and décor selections — all tailored to your unique celebration and budget.</p></div></div>
+    <div class="process-step"><div class="step-marker">03</div><div class="step-content"><h3>Create & Build</h3><p>From sourcing premium materials to handcrafting custom pieces, we bring every element together with meticulous care and creative precision.</p></div></div>
+    <div class="process-step"><div class="step-marker">04</div><div class="step-content"><h3>Celebrate & Shine</h3><p>On the day, we handle everything — setup, coordination, and those final magical touches — so you can simply enjoy every moment.</p></div></div>
+  </div>
+</section>
+
+<section class="testimonials">
+  <div class="testimonials-header reveal">
+    <span class="section-label">Kind Words</span>
+    <h2 class="section-title">What Our <span class="color-word">Clients</span> Say</h2>
+  </div>
+  <div class="testimonial-card reveal">
+    <div class="testimonial-quote-mark">"</div>
+    <p>Phasa and Noonu transformed our daughter's birthday into something straight out of a fairy tale. Every detail was perfect — from the balloon arches to the tiniest table decoration. They truly put their heart into everything they do.</p>
+    <span class="testimonial-author">— A Happy Client</span>
+  </div>
+</section>
+
+<section class="contact" id="contact">
+  <div class="contact-inner reveal">
+    <span class="section-label">Let's Create Together</span>
+    <h2 class="section-title">Ready to Make<br>Your Event <span class="color-word">Magical?</span></h2>
+    <p class="contact-subtitle">Whether it's an intimate gathering or a grand celebration, we'd love to hear about your vision. Reach out and let's start planning something beautiful.</p>
+    <div class="contact-methods">
+      <div class="contact-method"><span class="contact-method-label">Follow Us</span><a href="https://www.instagram.com/phantasm.mv/" target="_blank">@phantasm.mv</a></div>
+      <div class="contact-method"><span class="contact-method-label">Location</span><span>Maldives 🇲🇻</span></div>
+    </div>
+    <a href="https://www.instagram.com/phantasm.mv/" target="_blank" class="btn-primary">Message Us on Instagram</a>
+    <div class="social-links">
+      <a href="https://www.instagram.com/phantasm.mv/" target="_blank" class="social-link" title="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+      <a href="https://www.facebook.com/phantasm.mv/" target="_blank" class="social-link" title="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385h-3.047v-3.47h3.047v-2.642c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953h-1.514c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385c5.738-.9 10.126-5.864 10.126-11.854z"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">
+    <img src="logo.png" alt="Phantasm MV">
+    <span class="footer-logo-text">Phantasm MV</span>
+  </div>
+  <p>&copy; 2017 — 2026 Phantasm MV. All rights reserved.</p>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => { document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50); });
+
+  const pc = document.getElementById('particles');
+  const colors = ['#7C3AED','#2563EB','#16A34A','#EAB308','#EA580C','#DC2626','#DB2777','#C026D3'];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.classList.add('particle');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDelay = Math.random() * 12 + 's';
+    p.style.animationDuration = (8 + Math.random() * 6) + 's';
+    const s = 3 + Math.random() * 5;
+    p.style.width = s + 'px'; p.style.height = s + 'px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    pc.appendChild(p);
+  }
+
+  const obs = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      const t = document.querySelector(this.getAttribute('href'));
+      if (t) { t.scrollIntoView({ behavior: 'smooth', block: 'start' }); document.getElementById('navLinks').classList.remove('open'); }
+    });
+  });
+</script>
+
+</body>
+</html>
